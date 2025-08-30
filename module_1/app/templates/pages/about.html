@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}About{% endblock title %}</h2>
+  <div class="about-header">
+    <h2>Bernard Guillermo</h2>
+    <h3>Lead Data Scientist at Fieldguide</h3>
+  </div>
 {% endblock header %}
 
 {% block content %}
-  <p>This is a message board for friendly messages.</p>
+<div class="about-container">
+  <div class="about-text">
+    <p>Bernard Guillermo is the Lead Data Scientist at Fieldguide, which builds workflow automation software for CPA firms. He holds a Bachelors of Arts in Economics and Political Science from the University of Maryland and a Bachelors of Science in Mathematics from Indiana University East.</p>
+  </div>
+  <div class="about-image">
+    <img src="{{ url_for('static', filename='images/IMG_8867.jpeg') }}" alt="Bernard's photo">
+  </div>
+</div>
 {% endblock content %}

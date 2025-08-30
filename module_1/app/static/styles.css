@@ -7,6 +7,7 @@
     font-size: 20px;
     margin: 0 auto;
     text-align: left;
+    padding-left: 20px;
   }
   
   a,
@@ -49,4 +50,26 @@
     font-weight: bold;
     color: white;
     background-color: #007BFF; /* blue highlight */
+  }
+
+  .about-container {
+    display: flex;
+    align-items: center;       /* vertically centers text and image */
+    gap: 10px;                 /* space between text and image */
+    flex-wrap: wrap;           /* allows wrapping on small screens */
+  }
+  
+  .about-text {
+    flex: 1;
+  }
+  
+  .about-image img {
+    max-width: 200px;
+    height: auto;
+    padding-right: 20px;
+  }
+
+  main {
+    margin: 0;
+    padding: 0;
   }
