@@ -31,12 +31,14 @@ python run.py
 Then go to http://127.0.0.1:8080
 
 ## Project Structure
+```
 module_1/
 │── run.py             # Flask entry point
 │── static/            # CSS, images
 │── templates/         # HTML templates
 │── requirements.txt   # Python package dependencies
 │── README.md          # Project documentation
+```
 
 ## Citations
 This website was built using the skeleton from the reading assignment:
