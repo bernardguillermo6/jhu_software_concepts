@@ -22,6 +22,7 @@ Install dependencies:
 ```
 pip install -r requirements.txt
 ```
+This application was built using Python 3.12.5
 
 ## Usage
 To run the project, run:
