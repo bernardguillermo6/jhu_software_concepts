@@ -29,7 +29,7 @@ To run the project, run:
 ```
 python run.py
 ```
-Then go to http://127.0.0.1:8080
+Then go to http://0.0.0.0:8080
 
 ## Project Structure
 ```

@@ -1,11 +1,16 @@
 <nav>
     <ul>
+      <!-- About link (adds "active" class if on the About page) -->  
       <li class="{% if request.path == url_for('pages.about') %}active{% endif %}">
         <a href="{{ url_for('pages.about') }}">About</a>
       </li>
+      
+      <!-- Contact link (adds "active" class if on the Contact page) -->
       <li class="{% if request.path == url_for('pages.contact') %}active{% endif %}">
         <a href="{{ url_for('pages.contact') }}">Contact</a>
       </li>
+      
+      <!-- Projects link (adds "active" class if on the Projects page) -->
       <li class="{% if request.path == url_for('pages.projects') %}active{% endif %}">
         <a href="{{ url_for('pages.projects') }}">Projects</a>
       </li>      

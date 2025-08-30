@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <title>{% block title %}{% endblock title %}</title>
+  <!-- Link to static/styles.css for formatting -->
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+ <!-- Navigation bar -->    
 {% include("_navigation.html") %}
-<section>
-  <header>
+<section class="page-section">
+  <header class="page-header">
     {% block header %}{% endblock header %}
   </header>
-  <main>
+  <main class="page-content">
     {% block content %}<p>No messages.</p>{% endblock content %}
   </main>
 </section>
