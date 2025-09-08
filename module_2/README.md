@@ -39,17 +39,20 @@ To run the project, run:
 python app.py
 ```
 
+## Known Bugs
+One thing to note is that the raw `applicant_data.json` file has 50k records but `llm_extend_applicant_data.jsonl` only has 40k records. I didn't have enough time to process the remaining 10k records.
+
 ## Project Structure
 ```
 module_2/
-│── app.py                         # the main file 
-│── clean.py                       # file that houses functions to clean the data
-│── scrape.py                      # file that houses functions to scrape the data
-│── requirements.txt               # Python package dependencies
-│── README.md                      # Project documentation
-|── robots_txt_screenshot.png      # Screenshot to confirm robots.txt file
-|── applicant_data.json            # Output of app.py
-|── llm_extend_applicant_data.json # Cleaned version of output of app.py
+│── app.py                          # the main file 
+│── clean.py                        # file that houses functions to clean the data
+│── scrape.py                       # file that houses functions to scrape the data
+│── requirements.txt                # Python package dependencies
+│── README.md                       # Project documentation
+|── robots_txt_screenshot.png       # Screenshot to confirm robots.txt file
+|── applicant_data.json             # Output of app.py
+|── llm_extend_applicant_data.jsonl # Cleaned version of output of app.py
 ```
 
 
