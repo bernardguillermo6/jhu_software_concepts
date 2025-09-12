@@ -1,14 +1,61 @@
 <!-- index.html -->
 {% extends "base.html" %}
 
-{% block title %}Questions and Answers{% endblock %}
+{% block title %}Answers{% endblock %}
 
 {% block content %}
-<h1>Questions and Answers</h1>
+<h1>Answers</h1>
+
+<!-- Fetch New Data Button -->
+<form id="fetch-form" action="{{ url_for('pages.scrape') }}" method="post" style="display:inline-block; margin-right: 10px;">
+    <button type="submit" id="fetch-btn"
+        {% if is_scraping %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+        Fetch New Data
+    </button>
+</form>
+
+<!-- Refresh SQL Queries Button -->
+<form id="refresh-form" action="{{ url_for('pages.refresh_queries') }}" method="post" style="display:inline-block;">
+    <button type="submit" id="refresh-btn"
+        {% if is_scraping %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+        Refresh SQL Answers
+    </button>
+</form>
+
+<hr>
+
 {% for row in data %}
-<div class="qa">
-    <div class="question">{{ row.question }}</div>
-    <div class="answer">Answer: {{ row.answer }}</div>
+<div class="qa" style="margin-bottom: 15px;">
+    <div class="question"><strong>Q:</strong> {{ row.question }}</div>
+    <div class="answer"><strong>A:</strong> {{ row.answer }}</div>
 </div>
 {% endfor %}
+
+<script>
+function setButtonsDisabled(disabled) {
+    const fetchBtn = document.getElementById("fetch-btn");
+    const refreshBtn = document.getElementById("refresh-btn");
+    fetchBtn.disabled = disabled;
+    refreshBtn.disabled = disabled;
+    fetchBtn.style.opacity = disabled ? 0.5 : 1;
+    refreshBtn.style.opacity = disabled ? 0.5 : 1;
+    fetchBtn.style.cursor = disabled ? "not-allowed" : "pointer";
+    refreshBtn.style.cursor = disabled ? "not-allowed" : "pointer";
+}
+
+// Poll server to re-enable buttons when scraper is finished
+function checkScraperStatus() {
+    fetch('{{ url_for("pages.scraper_status") }}')
+        .then(response => response.json())
+        .then(data => setButtonsDisabled(data.is_scraping));
+}
+
+// Immediately disable buttons when fetch form is submitted
+document.getElementById("fetch-form").addEventListener("submit", function() {
+    setButtonsDisabled(true);
+});
+
+// Poll every 3 seconds
+setInterval(checkScraperStatus, 3000);
+</script>
 {% endblock %}

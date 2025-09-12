@@ -8,5 +8,8 @@ def create_app():
     """    
     app = Flask(__name__) # Create a new Flask app instance
 
+    # Needed for flash() and sessions
+    app.secret_key = "super-secret-key"  # replace with something random & secure
+
     app.register_blueprint(pages.bp) # Register the pages blueprint for routing
     return app
