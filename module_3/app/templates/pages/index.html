@@ -1,0 +1,14 @@
+<!-- index.html -->
+{% extends "base.html" %}
+
+{% block title %}Questions and Answers{% endblock %}
+
+{% block content %}
+<h1>Questions and Answers</h1>
+{% for row in data %}
+<div class="qa">
+    <div class="question">{{ row.question }}</div>
+    <div class="answer">Answer: {{ row.answer }}</div>
+</div>
+{% endfor %}
+{% endblock %}
