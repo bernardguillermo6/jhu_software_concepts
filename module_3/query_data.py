@@ -1,6 +1,8 @@
 from db import get_db_connection
 
 def get_questions_and_queries():
+    """stores all the questions and the SQL queries to return the answers"""
+
     return [
         ("How many entries do you have in your database who applied for Fall 2025?",
          "SELECT 'Applicant count: ' || COUNT(*) FROM applicants WHERE term in ('Fall 2025','F25')"),
@@ -26,11 +28,13 @@ def get_questions_and_queries():
 
 
 def run_queries():
-    """Fetch all Q&A pairs by running queries against the DB."""
+    """this function returns all the question and answer pairs, querying against the psql db"""
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
-    data = []
+    data = [] 
+    # create a list of all the question and answer pairs
     for question, query in get_questions_and_queries():
         cur.execute(query)
         answer = cur.fetchone()[0]
@@ -42,7 +46,8 @@ def run_queries():
 
 
 def get_max_id():
-    """Fetch the current maximum ID from the applicants table."""
+    """get the max id from the postgres db so we know when to stop scraping for new data"""
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""

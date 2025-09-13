@@ -91,8 +91,10 @@ def clean_data(raw_entries, target_count):
     return cleaned
 
 def clean_with_llm(input_file: str, output_file: str):
-    """Calls the LLM on input_file and writes output to output_file."""
+    """calls the LLM on input_file and writes output to output_file."""
+
     print(f"Cleaning entries with LLM. Input: {input_file}, Output: {output_file}")
+    # command to call the LLM from module 2 and output results
     cmd = [
         "python",
         "module_2/llm_hosting/app.py",
@@ -107,7 +109,7 @@ def clean_with_llm(input_file: str, output_file: str):
 
     print(f"Finished cleaning with LLM. Output saved to: {output_file}")
 
-    # Read JSONL back into Python objects
+    # read JSONL back into Python objects
     with open(output_file) as f:
         cleaned_data = [json.loads(line) for line in f]
 

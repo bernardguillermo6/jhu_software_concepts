@@ -94,18 +94,14 @@ def _scrape_page(page_entry: dict):
 
 
 def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
-    """
-    Scrape new survey entries from The Grad Cafe.
+    """This function scrapes new entries based on the max id"""
 
-    Parameters:
-    - max_id: Only fetch entries with ID > max_id
-    - target_count: How many new entries to fetch
-    - batch_size: How many survey pages to scrape concurrently per batch
-    """
     all_entries = []
-    page_num = 1
+    page_num = 1 # initializing the page to start
 
+    # keep grabbing entries until you hit a target amount
     while len(all_entries) < target_count:
+
         page_range = range(page_num, page_num + batch_size)
         print(f"Scraping survey pages {page_range[0]}–{page_range[-1]}...")
 
@@ -114,9 +110,11 @@ def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
 
         batch_entries = [e for sublist in results for e in sublist]
 
+        # if we get to the max id already loaded, we stop collecting entries
         if max_id:
             batch_entries = [e for e in batch_entries if e["id"] > max_id]
 
+        # if no new entries, stop
         if not batch_entries:
             print("No new entries found in this batch. Stopping early.")
             break
@@ -127,6 +125,7 @@ def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
     all_entries = all_entries[:target_count]
     print(f"Collected {len(all_entries)} survey entries. Fetching details...")
 
+    # grab the results page from the entries
     with ThreadPoolExecutor(max_workers=300) as executor:
         detailed = list(executor.map(_scrape_page, all_entries))
 

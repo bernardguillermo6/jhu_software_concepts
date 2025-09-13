@@ -5,10 +5,10 @@ import json
 from app import create_app
 from load_data import load_data_to_db, load_jsonl
 
-# Path to your JSONL file with pre-cleaned/LLM-cleaned data
+# path to jsonl data from module 2
 file_path = "data/llm_extend_applicant_data.jsonl"
 
-# Perform initial load: drops table if exists
+# loads the initial module 2 data to the db, dropping the table if it already exists
 load_data_to_db(file_path, initial_load=True)
 
 app = create_app()  # create Flask app instance

@@ -4,7 +4,7 @@ import psycopg
 from pathlib import Path
 import argparse
 
-# Map JSON keys to table columns
+# dictionary to map jsonl keys to the column names in the db
 KEY_MAP = {
     "program": "program",
     "comments": "comments",
@@ -24,13 +24,15 @@ KEY_MAP = {
 
 
 def load_jsonl(filename):
-    """Load a JSONL file into a list of dictionaries"""
+    """reads in a jsonl file"""
+    
     with open(filename, "r") as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
 def create_table(conn):
-    """Create applicants table with UNIQUE constraint on url"""
+    """create the postgres table"""
+
     with conn.cursor() as cur:
         cur.execute("DROP TABLE IF EXISTS applicants;")
         cur.execute("""
@@ -56,7 +58,8 @@ def create_table(conn):
 
 
 def insert_data(conn, data):
-    """Insert a list of cleaned dictionaries into the applicants table"""
+    """insert a list of dictionaries to the postgres table"""
+    
     with conn.cursor() as cur:
         for row in data:
             mapped_row = {KEY_MAP[k]: v for k, v in row.items() if k in KEY_MAP}
@@ -76,31 +79,33 @@ def insert_data(conn, data):
 
 
 def load_data_to_db(file_path, initial_load=False, connection_string=None):
-    """
-    General function to load JSONL file into PostgreSQL.
+    """load jsonl files into postgres"""
     
-    :param file_path: path to JSONL file
-    :param initial_load: if True, drops and recreates table
-    :param connection_string: PostgreSQL connection string
-    """
+    # setting the connection string to db: thegradcafe
     connection_string = connection_string or "dbname=thegradcafe user=postgres host=localhost port=5432"
 
+    # initialize the data from the jsonl file
     data = load_jsonl(file_path)
     if not data:
         print(f"No data found in {file_path}")
         return
 
     with psycopg.connect(connection_string) as conn:
+        # if it's the first time the table is created, drop and recreate the table
         if initial_load:
             print("Performing initial load: dropping and recreating table...")
             create_table(conn)
         else:
+            # if the table already exists, append new rows
             print("Appending new entries to existing table...")
 
+        # insert the data into the table
         insert_data(conn, data)
         print(f"Loaded {len(data)} entries into the applicants table.")
 
 def load_jsonl(filename="applicant_data.jsonl"):
+    """load a jsonl file"""
+
     with open(filename, "r") as f:
         return [json.loads(line) for line in f if line.strip()]
 
