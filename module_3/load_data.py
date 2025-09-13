@@ -100,6 +100,9 @@ def load_data_to_db(file_path, initial_load=False, connection_string=None):
         insert_data(conn, data)
         print(f"Loaded {len(data)} entries into the applicants table.")
 
+def load_jsonl(filename="applicant_data.jsonl"):
+    with open(filename, "r") as f:
+        return [json.loads(line) for line in f if line.strip()]
 
 if __name__ == "__main__":
     

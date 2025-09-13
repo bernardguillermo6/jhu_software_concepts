@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-from utils import load_jsonl
 import psycopg
 import json
 from app import create_app
-from load_data import load_data_to_db
+from load_data import load_data_to_db, load_jsonl
 
 # Path to your JSONL file with pre-cleaned/LLM-cleaned data
 file_path = "data/llm_extend_applicant_data.jsonl"
