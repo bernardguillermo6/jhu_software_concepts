@@ -53,3 +53,9 @@ def get_max_id():
     cur.close()
     conn.close()
     return result if result else 0
+
+if __name__ == "__main__":
+    for item in run_queries():
+        print(f"Q: {item['question']}")
+        print(f"A: {item['answer']}")
+        print("-" * 80)
