@@ -1,54 +1,15 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from module_2.scrape import scrape_new_entries
-from module_2.clean import clean_data
+from module_2.clean import clean_data, clean_with_llm
 import os, json, subprocess
 from load_data import load_data_to_db
-from query_data import get_db_connection, run_queries
+from query_data import get_db_connection, run_queries, get_max_id
 
 # Initializing the blueprint for the page routes
 bp = Blueprint("pages", __name__)
 
 # Global flag to track scraper state
 is_scraping = False
-
-
-def get_max_id():
-    """Fetch the current maximum ID from the applicants table."""
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT MAX(CAST(split_part(url, '/result/', 2) AS INTEGER)) AS max_id
-        FROM applicants
-    """)
-    result = cur.fetchone()[0]
-    cur.close()
-    conn.close()
-    return result if result else 0
-
-
-def clean_with_llm(input_file: str, output_file: str):
-    """Calls the LLM on input_file and writes output to output_file."""
-    print(f"Cleaning entries with LLM. Input: {input_file}, Output: {output_file}")
-    cmd = [
-        "python",
-        "module_2/llm_hosting/app.py",
-        "--file", input_file,
-        "--out", output_file,
-    ]
-
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    if result.returncode != 0:
-        raise RuntimeError(f"LLM failed: {result.stderr}")
-
-    print(f"Finished cleaning with LLM. Output saved to: {output_file}")
-
-    # Read JSONL back into Python objects
-    with open(output_file) as f:
-        cleaned_data = [json.loads(line) for line in f]
-
-    return cleaned_data
-
 
 # Route for the index page
 @bp.route("/")
