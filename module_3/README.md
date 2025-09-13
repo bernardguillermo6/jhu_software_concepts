@@ -44,6 +44,7 @@ module_2/
 │── run.py             # Flask entry point
 │── query_data.py      # Question and answers to the prompt
 │── load_data.py       # Functions to load data from jsonl to psql 
+│── db.py              # Functions to initialze db connections
 │── module_2/          # Libraries (scrape, clean, and LLM) from module_2
 │── static/            # CSS
 │── templates/         # HTML templates
