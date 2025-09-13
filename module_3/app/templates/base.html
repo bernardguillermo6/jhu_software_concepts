@@ -1,20 +1,14 @@
-
-<!-- base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Analysis{% endblock %}</title>
-    <style>
-        a { color: #687d80; font-size: 13px; margin-left: 50px; text-decoration: none; }
-        .qa { padding: 10px; margin: 5px; background-color: #f4f4f4; }
-        .question { font-weight: bold; }
-        .answer { margin-left: 20px; font-style: italic; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-
+<body>
     <div class="content">
         {% block content %}{% endblock %}
     </div>
 </body>
 </html>
+

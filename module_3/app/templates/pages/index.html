@@ -1,4 +1,3 @@
-<!-- index.html -->
 {% extends "base.html" %}
 
 {% block title %}Answers{% endblock %}
@@ -6,26 +5,31 @@
 {% block content %}
 <h1>Answers</h1>
 
-<!-- Fetch New Data Button -->
-<form id="fetch-form" action="{{ url_for('pages.scrape') }}" method="post" style="display:inline-block; margin-right: 10px;">
-    <button type="submit" id="fetch-btn"
-        {% if is_scraping %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
-        Fetch New Data
-    </button>
-</form>
+<!-- Buttons Row -->
+<div class="button-row">
+    <!-- Fetch New Data Button -->
+    <form id="fetch-form" action="{{ url_for('pages.scrape') }}" method="post">
+        <button type="submit" id="fetch-btn" class="btn"
+            title="Pull in the most up to date information from thegradcafe.com"
+            {% if is_scraping %}disabled{% endif %}>
+            Pull Data
+        </button>
+    </form>
 
-<!-- Refresh SQL Queries Button -->
-<form id="refresh-form" action="{{ url_for('pages.refresh_queries') }}" method="post" style="display:inline-block;">
-    <button type="submit" id="refresh-btn"
-        {% if is_scraping %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
-        Refresh SQL Answers
-    </button>
-</form>
+    <!-- Refresh SQL Queries Button -->
+    <form id="refresh-form" action="{{ url_for('pages.refresh_queries') }}" method="post">
+        <button type="submit" id="refresh-btn" class="btn"
+            title="Update the answers to include the most up to date data"
+            {% if is_scraping %}disabled{% endif %}>
+            Update Analysis
+        </button>
+    </form>
+</div>
 
 <hr>
 
 {% for row in data %}
-<div class="qa" style="margin-bottom: 15px;">
+<div class="qa">
     <div class="question"><strong>Q:</strong> {{ row.question }}</div>
     <div class="answer"><strong>A:</strong> {{ row.answer }}</div>
 </div>

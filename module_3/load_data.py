@@ -2,6 +2,7 @@
 import json
 import psycopg
 from pathlib import Path
+import argparse
 
 # Map JSON keys to table columns
 KEY_MAP = {
@@ -101,8 +102,7 @@ def load_data_to_db(file_path, initial_load=False, connection_string=None):
 
 
 if __name__ == "__main__":
-    import argparse
-
+    
     parser = argparse.ArgumentParser(description="Load JSONL applicant data into PostgreSQL")
     parser.add_argument("file", help="Path to JSONL file")
     parser.add_argument("--initial", action="store_true", help="Drop table and reload all data")
