@@ -3,8 +3,6 @@
 from utils import load_jsonl
 import psycopg
 import json
-import pandas as pd
-from sqlalchemy import create_engine
 from app import create_app
 from load_data import load_data_to_db
 
