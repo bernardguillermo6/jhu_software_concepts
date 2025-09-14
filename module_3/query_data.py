@@ -1,8 +1,12 @@
 from db import get_db_connection
 
-def get_questions_and_queries():
-    """stores all the questions and the SQL queries to return the answers"""
 
+def _get_questions_and_queries():
+    """Return a static list of questions and their associated SQL queries.
+
+    Output:
+        list[tuple[str, str]]: A list of (question, SQL query) tuples.
+    """
     return [
         ("How many entries do you have in your database who applied for Fall 2025?",
          "SELECT 'Applicant count: ' || COUNT(*) FROM applicants WHERE term in ('Fall 2025','F25')"),
@@ -28,14 +32,22 @@ def get_questions_and_queries():
 
 
 def run_queries():
-    """this function returns all the question and answer pairs, querying against the psql db"""
-    
+    """Run predefined SQL queries and return their results.
+
+    Executes each SQL query defined in `_get_questions_and_queries()` and
+    collects the question text with its corresponding database answer.
+
+    Output:
+        list[dict[str, str]]: A list of dictionaries with keys:
+            - 'question' (str): The question being asked.
+            - 'answer' (str): The answer from the database.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
 
-    data = [] 
-    # create a list of all the question and answer pairs
-    for question, query in get_questions_and_queries():
+    data = []
+    # Create a list of all the question and answer pairs
+    for question, query in _get_questions_and_queries():
         cur.execute(query)
         answer = cur.fetchone()[0]
         data.append({"question": question, "answer": answer})
@@ -46,8 +58,14 @@ def run_queries():
 
 
 def get_max_id():
-    """get the max id from the postgres db so we know when to stop scraping for new data"""
+    """Get the maximum applicant result ID from the database.
 
+    Queries the applicants table for the maximum numeric ID extracted from
+    the `url` field.
+
+    Output:
+        int: The maximum applicant ID, or 0 if the table is empty.
+    """
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
@@ -58,6 +76,7 @@ def get_max_id():
     cur.close()
     conn.close()
     return result if result else 0
+
 
 if __name__ == "__main__":
     for item in run_queries():

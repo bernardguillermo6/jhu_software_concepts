@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# scrape.py
 import urllib3
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -93,15 +92,31 @@ def _scrape_page(page_entry: dict):
         return None
 
 
-def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
-    """This function scrapes new entries based on the max id"""
+def scrape_new_entries(max_id=None, target_count=30000, batch_size=5):
+    """Scrape new survey entries from the site until a target count is reached.
 
+    This function scrapes entries in batches of pages, filters out entries that
+    are already known (based on max_id), and then fetches detailed information
+    for each entry.
+
+    Input:
+        max_id (int | None, optional): The maximum existing entry ID in the database. 
+            If provided, entries with IDs <= max_id will be ignored. Defaults to None.
+        target_count (int, optional): The total number of new entries to collect. 
+            Defaults to 50.
+        batch_size (int, optional): The number of pages to scrape in each batch. 
+            Defaults to 5.
+
+    Output:
+        list[dict]: A list of dictionaries containing the scraped entry details. 
+        Each dict corresponds to one survey entry, with keys such as "id" and 
+        any fields extracted from the detailed result pages.
+    """
     all_entries = []
-    page_num = 1 # initializing the page to start
+    page_num = 1  # Initial page to start from
 
-    # keep grabbing entries until you hit a target amount
+    # Keep grabbing entries until the target count is reached
     while len(all_entries) < target_count:
-
         page_range = range(page_num, page_num + batch_size)
         print(f"Scraping survey pages {page_range[0]}–{page_range[-1]}...")
 
@@ -110,11 +125,11 @@ def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
 
         batch_entries = [e for sublist in results for e in sublist]
 
-        # if we get to the max id already loaded, we stop collecting entries
+        # Filter out entries that are already loaded
         if max_id:
             batch_entries = [e for e in batch_entries if e["id"] > max_id]
 
-        # if no new entries, stop
+        # If no new entries found, stop early
         if not batch_entries:
             print("No new entries found in this batch. Stopping early.")
             break
@@ -125,7 +140,7 @@ def scrape_new_entries(max_id=None, target_count=50, batch_size=5):
     all_entries = all_entries[:target_count]
     print(f"Collected {len(all_entries)} survey entries. Fetching details...")
 
-    # grab the results page from the entries
+    # Fetch detailed entry pages
     with ThreadPoolExecutor(max_workers=300) as executor:
         detailed = list(executor.map(_scrape_page, all_entries))
 
