@@ -22,17 +22,17 @@ def test_insert_on_pull(client):
         "program": "CS PhD",
         "comments": "solid app",
         "date_added": "2025-09-18",
-        "url": "http://unique-url-1.com",   # matches DB column "url"
-        "status": "Accepted",               # matches DB column "status"
+        "URL": "http://unique-url-1.com",  # KEY_MAP requires "URL"
+        "applicant_status": "Accepted",
         "term": "Fall 2025",
-        "us_or_international": "US",        # matches DB column "us_or_international"
-        "gpa": 3.9,
-        "gre": 330,
-        "gre_v": 165,
-        "gre_aw": 4.5,
-        "degree": "BS",
-        "llm_generated_program": "Computer Science",
-        "llm_generated_university": "MIT"
+        "US/International": "US",
+        "GPA": 3.9,
+        "GRE Score": 330,
+        "GRE V Score": 165,
+        "GRE AW": 4.5,
+        "Degree": "BS",
+        "llm-generated-program": "Computer Science",
+        "llm-generated-university": "MIT"
     }]
 
     cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
@@ -73,17 +73,17 @@ def test_idempotency_on_duplicate_pull(client):
         "program": "Math MS",
         "comments": "dup test",
         "date_added": "2025-09-18",
-        "url": "http://unique-url-dup.com",   # unique URL
-        "status": "Waitlisted",
+        "URL": "http://unique-url-dup.com",  # unique URL
+        "applicant_status": "Waitlisted",
         "term": "Fall 2025",
-        "us_or_international": "International",
-        "gpa": 3.5,
-        "gre": 320,
-        "gre_v": 160,
-        "gre_aw": 4.0,
-        "degree": "BS",
-        "llm_generated_program": "Mathematics",
-        "llm_generated_university": "Stanford"
+        "US/International": "International",
+        "GPA": 3.5,
+        "GRE Score": 320,
+        "GRE V Score": 160,
+        "GRE AW": 4.0,
+        "Degree": "BS",
+        "llm-generated-program": "Mathematics",
+        "llm-generated-university": "Stanford"
     }]
 
     cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
