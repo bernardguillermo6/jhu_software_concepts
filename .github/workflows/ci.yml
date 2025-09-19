@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   test:
@@ -17,18 +17,23 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: testdb
-        ports: ["5432:5432"]
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres -d testdb"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -37,10 +42,31 @@ jobs:
           cd module_4
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov beautifulsoup4
 
-      - name: Run pytest
-        working-directory: module_4
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
-        run: pytest -m "web or buttons or analysis or db or integration" -v --maxfail=1 --disable-warnings
+      - name: Initialize DB schema
+        run: |
+          psql $DATABASE_URL -c "
+          CREATE TABLE IF NOT EXISTS applicants (
+              id SERIAL PRIMARY KEY,
+              program TEXT NOT NULL,
+              comments TEXT,
+              date_added DATE,
+              url TEXT UNIQUE NOT NULL,
+              status TEXT NOT NULL,
+              term TEXT,
+              nationality TEXT,
+              gpa NUMERIC,
+              gre_score NUMERIC,
+              gre_v NUMERIC,
+              gre_aw NUMERIC,
+              degree TEXT,
+              llm_generated_program TEXT,
+              llm_generated_university TEXT
+          );"
+
+      - name: Run tests
+        run: |
+          cd module_4
+          pytest -m "web or buttons or analysis or db or integration" -v --maxfail=1 --disable-warnings --cov=src --cov-report=term-missing
 
