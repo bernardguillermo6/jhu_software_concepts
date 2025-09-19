@@ -66,7 +66,7 @@ def test_clean_data_rejection_and_other():
 
 # ---------- clean_with_llm ----------
 
-@pytest.mark.run
+@pytest.mark.integration
 def test_clean_with_llm_success(tmp_path, monkeypatch, capsys):
     infile = tmp_path / "in.jsonl"
     outfile = tmp_path / "out.jsonl"
@@ -87,7 +87,7 @@ def test_clean_with_llm_success(tmp_path, monkeypatch, capsys):
     assert data == [{"program": "CS"}]
 
 
-@pytest.mark.run
+@pytest.mark.integration
 def test_clean_with_llm_failure(monkeypatch, tmp_path):
     infile = tmp_path / "in.jsonl"
     outfile = tmp_path / "out.jsonl"

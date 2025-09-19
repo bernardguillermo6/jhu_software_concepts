@@ -80,7 +80,7 @@ def test_load_data_to_db_no_data(monkeypatch, capsys, tmp_path):
     assert f"No data found in {f}" in captured.out
 
 
-@pytest.mark.run
+@pytest.mark.integration
 def test_cli_entrypoint_runs(monkeypatch, tmp_path, capsys):
     # Create a temp JSONL file with one row
     f = tmp_path / "data.jsonl"

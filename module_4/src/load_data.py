@@ -1,3 +1,16 @@
+"""
+Database loading utilities for applicant data.
+
+This module handles reading JSONL files of scraped/cleaned data and loading
+them into a PostgreSQL database. It includes:
+
+- `load_jsonl`: Read JSONL files into Python lists of dictionaries.
+- `create_table`: Drop and recreate the `applicants` table.
+- `insert_data`: Insert applicant records into the database.
+- `load_data_to_db`: Main entry point to load a JSONL dataset into Postgres,
+  supporting both initial full reloads and incremental appends.
+"""
+
 #!/usr/bin/env python3
 import json
 import psycopg
@@ -24,26 +37,36 @@ KEY_MAP = {
 
 
 def load_jsonl(filename: str):
-    """Read data from a jsonl (json Lines) file.
+    """
+    Read data from a JSONL (JSON Lines) file.
 
-    Input:
-        filename (str): Path to the jsonl file.
+    Parameters
+    ----------
+    filename : str
+        Path to the JSONL file.
 
-    Output:
-        list[dict]: A list of dictionaries, one per line of JSON in the file.
+    Returns
+    -------
+    list of dict
+        A list of dictionaries, one per line of JSON in the file.
     """
     with open(filename, "r") as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
 def create_table(conn):
-    """Create the PostgreSQL applicants table.
+    """
+    Create the PostgreSQL `applicants` table.
 
-    Input:
-        conn (psycopg.connection): A live PostgreSQL connection.
+    Parameters
+    ----------
+    conn : psycopg.Connection
+        A live PostgreSQL connection.
 
-    Output:
-        None. Commits the table creation to the database.
+    Returns
+    -------
+    None
+        Commits the table creation to the database.
     """
     with conn.cursor() as cur:
         cur.execute("DROP TABLE IF EXISTS applicants;")
@@ -70,15 +93,21 @@ def create_table(conn):
 
 
 def insert_data(conn, data):
-    """Insert rows into the PostgreSQL 'applicants' table.
+    """
+    Insert rows into the PostgreSQL `applicants` table.
 
-    Input:
-        conn (psycopg.connection): A live postgreSQL connection.
-        data (list[dict]): A list of dictionaries with applicant data,
-            where keys correspond to jsonl keys and will be mapped to db columns.
+    Parameters
+    ----------
+    conn : psycopg.Connection
+        A live PostgreSQL connection.
+    data : list of dict
+        A list of dictionaries with applicant data. Keys correspond to JSONL
+        fields and will be mapped to database columns.
 
-    Output:
-        None. Commits inserted rows into the database.
+    Returns
+    -------
+    None
+        Commits inserted rows into the database.
     """
     with conn.cursor() as cur:
         for row in data:
@@ -99,18 +128,23 @@ def insert_data(conn, data):
 
 
 def load_data_to_db(file_path, initial_load=False, connection_string=None):
-    """Load applicant data from a JSONL file into PostgreSQL.
+    """
+    Load applicant data from a JSONL file into PostgreSQL.
 
-    Input:
-        file_path (str): Path to the json file containing applicant data.
-        initial_load (bool, optional): If True, drop and recreate the table
-            before inserting. Defaults to False (append mode).
-        connection_string (str, optional): A postgres connection string.
-            If not provided, defaults to
-            "dbname=thegradcafe user=postgres host=localhost port=5432".
+    Parameters
+    ----------
+    file_path : str
+        Path to the JSONL file containing applicant data.
+    initial_load : bool, optional
+        If True, drop and recreate the table before inserting (default False).
+    connection_string : str, optional
+        PostgreSQL connection string. Defaults to
+        ``"dbname=thegradcafe user=postgres host=localhost port=5432"``.
 
-    Output:
-        None. Loads data into the applicants table.
+    Returns
+    -------
+    None
+        Loads data into the applicants table.
     """
     connection_string = connection_string or "dbname=thegradcafe user=postgres host=localhost port=5432"
 

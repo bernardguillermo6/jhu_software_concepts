@@ -71,3 +71,35 @@ def test_busy_gating_refresh_and_scrape(client):
 
     # Reset busy flag for other tests
     pages.is_scraping = False
+
+
+@pytest.mark.buttons
+def test_scrape_handles_exception(client):
+    """
+    If scrape_new_entries raises an exception:
+    - POST /scrape should return 500 with {"error": "..."}.
+    - is_scraping should reset to False.
+    """
+    from src.app import pages
+    pages.is_scraping = False  # reset before test
+
+    with patch("src.app.pages.get_max_id", return_value=0):
+        with patch("src.app.pages.scrape_new_entries", side_effect=Exception("scrape failed")):
+            response = client.post("/scrape")
+            assert response.status_code == 500
+            assert "error" in response.json
+
+    assert pages.is_scraping is False
+
+
+@pytest.mark.buttons
+def test_refresh_queries_handles_loader_error(client):
+    """
+    If load_data_to_db raises an exception:
+    - POST /refresh_queries should return 500 with {"error": "..."}.
+    """
+    with patch("src.app.pages.os.path.exists", return_value=True):
+        with patch("src.app.pages.load_data_to_db", side_effect=Exception("load failed")):
+            response = client.post("/refresh_queries")
+            assert response.status_code == 500
+            assert "error" in response.json

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>src.load_data module &#8212; Grad Cafe Application 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.query_data module" href="src.query_data.html" />
+    <link rel="prev" title="src.clean module" href="src.clean.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-src.load_data">
+<span id="src-load-data-module"></span><h1>src.load_data module<a class="headerlink" href="#module-src.load_data" title="Link to this heading">¶</a></h1>
+<p>Database loading utilities for applicant data.</p>
+<p>This module handles reading JSONL files of scraped/cleaned data and loading
+them into a PostgreSQL database. It includes:</p>
+<ul class="simple">
+<li><p><cite>load_jsonl</cite>: Read JSONL files into Python lists of dictionaries.</p></li>
+<li><p><cite>create_table</cite>: Drop and recreate the <cite>applicants</cite> table.</p></li>
+<li><p><cite>insert_data</cite>: Insert applicant records into the database.</p></li>
+<li><p><cite>load_data_to_db</cite>: Main entry point to load a JSONL dataset into Postgres,
+supporting both initial full reloads and incremental appends.</p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.load_data.load_jsonl">
+<span class="sig-prename descclassname"><span class="pre">src.load_data.</span></span><span class="sig-name descname"><span class="pre">load_jsonl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/load_data.html#load_jsonl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.load_data.load_jsonl" title="Link to this definition">¶</a></dt>
+<dd><p>Read data from a JSONL (JSON Lines) file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Path to the JSONL file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries, one per line of JSON in the file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.load_data.create_table">
+<span class="sig-prename descclassname"><span class="pre">src.load_data.</span></span><span class="sig-name descname"><span class="pre">create_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/load_data.html#create_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.load_data.create_table" title="Link to this definition">¶</a></dt>
+<dd><p>Create the PostgreSQL <cite>applicants</cite> table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>conn</strong> (<em>psycopg.Connection</em>) – A live PostgreSQL connection.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Commits the table creation to the database.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.load_data.insert_data">
+<span class="sig-prename descclassname"><span class="pre">src.load_data.</span></span><span class="sig-name descname"><span class="pre">insert_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/load_data.html#insert_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.load_data.insert_data" title="Link to this definition">¶</a></dt>
+<dd><p>Insert rows into the PostgreSQL <cite>applicants</cite> table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conn</strong> (<em>psycopg.Connection</em>) – A live PostgreSQL connection.</p></li>
+<li><p><strong>data</strong> (<em>list</em><em> of </em><em>dict</em>) – A list of dictionaries with applicant data. Keys correspond to JSONL
+fields and will be mapped to database columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Commits inserted rows into the database.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.load_data.load_data_to_db">
+<span class="sig-prename descclassname"><span class="pre">src.load_data.</span></span><span class="sig-name descname"><span class="pre">load_data_to_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/load_data.html#load_data_to_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.load_data.load_data_to_db" title="Link to this definition">¶</a></dt>
+<dd><p>Load applicant data from a JSONL file into PostgreSQL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>str</em>) – Path to the JSONL file containing applicant data.</p></li>
+<li><p><strong>initial_load</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, drop and recreate the table before inserting (default False).</p></li>
+<li><p><strong>connection_string</strong> (<em>str</em><em>, </em><em>optional</em>) – PostgreSQL connection string. Defaults to
+<code class="docutils literal notranslate"><span class="pre">&quot;dbname=thegradcafe</span> <span class="pre">user=postgres</span> <span class="pre">host=localhost</span> <span class="pre">port=5432&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loads data into the applicants table.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Grad Cafe Application</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../overview.html">Grad Cafe Application - Project Overview</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../overview.html#overview-setup">Overview &amp; Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview.html#architecture">Architecture</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../overview.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview.html#testing-guide">Testing Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="src.scrape.html">src.scrape module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.clean.html">src.clean module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">src.load_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.query_data.html">src.query_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="src.app.pages.html">src.app.pages module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../testing.html">Testing Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../overview.html">Grad Cafe Application - Project Overview</a><ul>
+  <li><a href="modules.html">API Reference</a><ul>
+      <li>Previous: <a href="src.clean.html" title="previous chapter">src.clean module</a></li>
+      <li>Next: <a href="src.query_data.html" title="next chapter">src.query_data module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Bernard Guillermo.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/api/src.load_data.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

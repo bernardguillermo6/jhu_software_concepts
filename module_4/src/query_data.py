@@ -1,11 +1,27 @@
+"""
+Query predefined analytics from the PostgreSQL applicants table.
+
+This module defines common analysis queries over the applicant data and
+provides functions to execute them:
+
+- `_get_questions_and_queries`: Returns the static list of (question, SQL).
+- `run_queries`: Executes queries and returns results as dicts.
+- `get_max_id`: Fetch the maximum applicant result ID from the DB.
+- `main`: CLI entry point that prints results to stdout.
+"""
+
+#!/usr/bin/env python3
 from src.db import get_db_connection
 
 
 def _get_questions_and_queries():
-    """Return a static list of questions and their associated SQL queries.
+    """
+    Return a static list of questions and their associated SQL queries.
 
-    Output:
-        list[tuple[str, str]]: A list of (question, SQL query) tuples.
+    Returns
+    -------
+    list of tuple[str, str]
+        A list of (question, SQL query) tuples.
     """
     return [
         ("How many entries do you have in your database who applied for Fall 2025?",
@@ -32,21 +48,23 @@ def _get_questions_and_queries():
 
 
 def run_queries():
-    """Run predefined SQL queries and return their results.
+    """
+    Run predefined SQL queries and return their results.
 
     Executes each SQL query defined in `_get_questions_and_queries()` and
     collects the question text with its corresponding database answer.
 
-    Output:
-        list[dict[str, str]]: A list of dictionaries with keys:
-            - 'question' (str): The question being asked.
-            - 'answer' (str): The answer from the database.
+    Returns
+    -------
+    list of dict
+        Each dict contains:
+        - 'question' (str): The question being asked.
+        - 'answer' (str): The answer from the database.
     """
     conn = get_db_connection()
     cur = conn.cursor()
 
     data = []
-    # Create a list of all the question and answer pairs
     for question, query in _get_questions_and_queries():
         cur.execute(query)
         answer = cur.fetchone()[0]
@@ -58,13 +76,16 @@ def run_queries():
 
 
 def get_max_id():
-    """Get the maximum applicant result ID from the database.
+    """
+    Get the maximum applicant result ID from the database.
 
     Queries the applicants table for the maximum numeric ID extracted from
     the `url` field.
 
-    Output:
-        int: The maximum applicant ID, or 0 if the table is empty.
+    Returns
+    -------
+    int
+        The maximum applicant ID, or 0 if the table is empty.
     """
     conn = get_db_connection()
     cur = conn.cursor()
@@ -79,7 +100,11 @@ def get_max_id():
 
 
 def main():
-    """Run queries and print them to stdout (for CLI usage)."""
+    """
+    Run queries and print them to stdout.
+
+    This is intended for CLI usage.
+    """
     for item in run_queries():
         print(f"Q: {item['question']}")
         print(f"A: {item['answer']}")

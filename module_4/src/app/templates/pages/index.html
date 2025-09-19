@@ -9,18 +9,24 @@
 <div class="button-row">
     <!-- Fetch New Data Button -->
     <form id="fetch-form">
-        <button type="submit" id="fetch-btn" class="btn"
-            title="Pull in the most up to date information from thegradcafe.com"
-            {% if is_scraping %}disabled{% endif %}>
+        <button type="submit"
+                id="fetch-btn"
+                class="btn"
+                data-testid="pull-data-btn"
+                title="Pull in the most up to date information from thegradcafe.com"
+                {% if is_scraping %}disabled{% endif %}>
             Pull Data
         </button>
     </form>
 
     <!-- Refresh SQL Queries Button -->
     <form id="refresh-form">
-        <button type="submit" id="refresh-btn" class="btn"
-            title="Update the answers to include the most up to date data"
-            {% if is_scraping %}disabled{% endif %}>
+        <button type="submit"
+                id="refresh-btn"
+                class="btn"
+                data-testid="update-analysis-btn"
+                title="Update the answers to include the most up to date data"
+                {% if is_scraping %}disabled{% endif %}>
             Update Analysis
         </button>
     </form>

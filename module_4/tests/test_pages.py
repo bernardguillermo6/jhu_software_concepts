@@ -3,7 +3,7 @@ from src.app.pages import bp, is_scraping
 from flask import Flask
 
 
-@pytest.mark.web
+@pytest.mark.buttons
 def test_scraper_status_returns_flag(monkeypatch):
     # Create a Flask app and register the blueprint
     app = Flask(__name__)

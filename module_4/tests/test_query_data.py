@@ -8,7 +8,7 @@ import src.query_data as query_data
 import src.db as db
 import runpy
 
-@pytest.mark.query
+@pytest.mark.db
 def test_query_data_main_prints(monkeypatch):
     fake_data = [
         {"question": "What is 2+2?", "answer": "4"},
@@ -27,7 +27,7 @@ def test_query_data_main_prints(monkeypatch):
     assert "Q: Square root of 9?" in output
     assert "A: 3" in output
 
-@pytest.mark.query
+@pytest.mark.db
 def test_main_cli_uses_fake_db_and_prints(monkeypatch):
     # --- Fake DB plumbing ---
     class FakeCursor:

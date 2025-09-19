@@ -1,3 +1,17 @@
+"""
+Scraping logic for The Grad Cafe admissions survey.
+
+This module is responsible for retrieving admissions data from
+https://www.thegradcafe.com/survey. It includes:
+
+- `_scrape_survey_page`: Fetch and parse survey listing pages.
+- `_scrape_page`: Fetch and parse individual result detail pages.
+- `scrape_new_entries`: Orchestrate scraping in batches, filter out
+  already-seen entries, and return cleaned dictionaries.
+
+The scraped data is later processed by `clean.py`.
+"""
+
 #!/usr/bin/env python3
 import urllib3
 from bs4 import BeautifulSoup
@@ -8,7 +22,19 @@ http = urllib3.PoolManager()
 
 
 def _scrape_survey_page(page_num: int):
-    """Scrape the main survey page (https://www.thegradcafe.com/survey)."""
+    """
+    Scrape the main survey page.
+
+    Parameters
+    ----------
+    page_num : int
+        The page number to scrape from https://www.thegradcafe.com/survey.
+
+    Returns
+    -------
+    list of dict
+        A list of entry dictionaries extracted from the survey page.
+    """
     url = f"https://www.thegradcafe.com/survey/?page={page_num}"
     try:
         response = http.request("GET", url, timeout=10.0)
@@ -62,7 +88,19 @@ def _scrape_survey_page(page_num: int):
 
 
 def _scrape_page(page_entry: dict):
-    """Scrape the detailed results page for a single entry."""
+    """
+    Scrape the detailed results page for a single entry.
+
+    Parameters
+    ----------
+    page_entry : dict
+        A dictionary containing at least the ``id`` and ``date_added`` of the entry.
+
+    Returns
+    -------
+    dict or None
+        A dictionary with detailed scraped fields, or ``None`` if scraping fails.
+    """
     page_id = page_entry["id"]
     url = f"https://www.thegradcafe.com/result/{page_id}"
 
@@ -93,24 +131,29 @@ def _scrape_page(page_entry: dict):
 
 
 def scrape_new_entries(max_id=None, target_count=30000, batch_size=5):
-    """Scrape new survey entries from the site until a target count is reached.
+    """
+    Scrape new survey entries from the site until a target count is reached.
 
     This function scrapes entries in batches of pages, filters out entries that
-    are already known (based on max_id), and then fetches detailed information
+    are already known (based on ``max_id``), and then fetches detailed information
     for each entry.
 
-    Input:
-        max_id (int | None, optional): The maximum existing entry ID in the database. 
-            If provided, entries with IDs <= max_id will be ignored. Defaults to None.
-        target_count (int, optional): The total number of new entries to collect. 
-            Defaults to 50.
-        batch_size (int, optional): The number of pages to scrape in each batch. 
-            Defaults to 5.
+    Parameters
+    ----------
+    max_id : int, optional
+        The maximum existing entry ID in the database. Entries with IDs <= max_id
+        will be ignored. Defaults to None.
+    target_count : int, optional
+        The total number of new entries to collect. Defaults to 30,000.
+    batch_size : int, optional
+        The number of pages to scrape in each batch. Defaults to 5.
 
-    Output:
-        list[dict]: A list of dictionaries containing the scraped entry details. 
-        Each dict corresponds to one survey entry, with keys such as "id" and 
-        any fields extracted from the detailed result pages.
+    Returns
+    -------
+    list of dict
+        A list of dictionaries containing the scraped entry details.
+        Each dict corresponds to one survey entry, with keys such as "id",
+        "url", "term", and GRE fields.
     """
     all_entries = []
     page_num = 1  # Initial page to start from

@@ -1,3 +1,14 @@
+"""
+Flask blueprint for web routes.
+
+Defines the main web routes for the Grad Cafe application:
+
+- `/analysis` (alias `/`): Render SQL query results.
+- `/scrape`: Scrape, pre-clean, and LLM-clean new entries.
+- `/refresh_queries`: Load cleaned entries into PostgreSQL.
+- `/scraper_status`: Return the scraper's busy/idle state.
+"""
+
 from flask import Blueprint, render_template
 from src.scrape import scrape_new_entries
 from src.clean import clean_data, clean_with_llm
@@ -20,10 +31,13 @@ os.makedirs(DATA_DIR, exist_ok=True)  # make sure it exists
 @bp.route("/")
 @bp.route("/analysis")
 def index():
-    """Render the index page with SQL query results and scraper status.
+    """
+    Render the index page with SQL query results and scraper status.
 
-    Output:
-        str: Rendered HTML template for the index page.
+    Returns
+    -------
+    str
+        Rendered HTML template for the index page.
     """
     global is_scraping
     data = run_queries()
@@ -32,16 +46,23 @@ def index():
 
 @bp.route("/scrape", methods=["POST"])
 def scrape():
-    """Scrape, pre-clean, and LLM-clean new entries, then save to files.
+    """
+    Scrape, pre-clean, and LLM-clean new entries, then save to files.
 
-    This route:
-      - Scrapes new survey entries (up to 20).
-      - Saves raw entries to `src/data/new_entries.json`.
-      - Pre-cleans and saves to `src/data/precleaned_entries.json`.
-      - Runs LLM cleaning and saves to `src/data/cleaned_entries.jsonl`.
+    Workflow
+    --------
+    - Scrapes new survey entries (up to 20).
+    - Saves raw entries to ``src/data/new_entries.json``.
+    - Pre-cleans and saves to ``src/data/precleaned_entries.json``.
+    - Runs LLM cleaning and saves to ``src/data/cleaned_entries.jsonl``.
 
-    Output:
-        JSON {ok: True} with 200 on success, or {busy: True} with 409 if busy.
+    Returns
+    -------
+    tuple(dict, int)
+        JSON response with status:
+        - ``{"ok": True}, 200`` on success
+        - ``{"busy": True}, 409`` if the scraper is already running
+        - ``{"error": "..."} , 500`` if an exception occurs
     """
     global is_scraping
     if is_scraping:
@@ -73,12 +94,17 @@ def scrape():
 
 @bp.route("/refresh_queries", methods=["POST"])
 def refresh_queries():
-    """Load cleaned data into PostgreSQL and refresh SQL query answers.
+    """
+    Load cleaned data into PostgreSQL and refresh SQL query answers.
 
-    Output:
-        JSON {ok: True} with 200 on success,
-        or {busy: True} with 409 if busy,
-        or {error: "..."} with 200 if no file.
+    Returns
+    -------
+    tuple(dict, int)
+        JSON response with status:
+        - ``{"ok": True}, 200`` if refreshed successfully
+        - ``{"busy": True}, 409`` if the scraper is already running
+        - ``{"error": "..."} , 200`` if no cleaned file exists
+        - ``{"error": "..."} , 500`` if loader fails
     """
     global is_scraping
 
@@ -86,19 +112,25 @@ def refresh_queries():
         return {"busy": True}, 409
 
     cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
-    if os.path.exists(cleaned_file):
+    if not os.path.exists(cleaned_file):
+        return {"error": "No cleaned data file found. Please run scraper first."}, 200
+
+    try:
         load_data_to_db(cleaned_file, initial_load=False)
         return {"ok": True}, 200
-    else:
-        return {"error": "No cleaned data file found. Please run scraper first."}, 200
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 
 @bp.route("/scraper_status")
 def scraper_status():
-    """Return the current scraper status.
+    """
+    Return the current scraper status.
 
-    Output:
-        dict: A json-compatible dictionary with key 'is_scraping' (bool).
+    Returns
+    -------
+    dict
+        A JSON-compatible dictionary with key ``is_scraping`` (bool).
     """
     global is_scraping
     return {"is_scraping": is_scraping}

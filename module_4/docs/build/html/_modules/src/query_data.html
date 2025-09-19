@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>src.query_data &#8212; Grad Cafe Application 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for src.query_data</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Query predefined analytics from the PostgreSQL applicants table.</span>
+
+<span class="sd">This module defines common analysis queries over the applicant data and</span>
+<span class="sd">provides functions to execute them:</span>
+
+<span class="sd">- `_get_questions_and_queries`: Returns the static list of (question, SQL).</span>
+<span class="sd">- `run_queries`: Executes queries and returns results as dicts.</span>
+<span class="sd">- `get_max_id`: Fetch the maximum applicant result ID from the DB.</span>
+<span class="sd">- `main`: CLI entry point that prints results to stdout.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#!/usr/bin/env python3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_db_connection</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_questions_and_queries</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a static list of questions and their associated SQL queries.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tuple[str, str]</span>
+<span class="sd">        A list of (question, SQL query) tuples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;How many entries do you have in your database who applied for Fall 2025?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Applicant count: &#39; || COUNT(*) FROM applicants WHERE term in (&#39;Fall 2025&#39;,&#39;F25&#39;)&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What percentage of entries are from international students (not American or Other) (to two decimal places)?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Percent International: &#39; || ROUND((SUM(CASE WHEN us_or_international = &#39;International&#39; THEN 1 ELSE 0 END)::numeric / COUNT(*) * 100), 2) || &#39;%&#39; AS percent_international FROM applicants;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What is the average GPA, GRE, GRE V, GRE AW of applicants who provide these metrics?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Average GPA: &#39; || ROUND(AVG(NULLIF(gpa,0))::numeric,2) || &#39;, Average GRE: &#39; || ROUND(AVG(NULLIF(gre,0))::numeric,2) || &#39;, Average GRE V: &#39; || ROUND(AVG(NULLIF(gre_v,0))::numeric,2) || &#39;, Average GRE AW: &#39; || ROUND(AVG(NULLIF(gre_aw,0))::numeric,2) FROM applicants;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What is their average GPA of American students in Fall 2025?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Average GPA American: &#39; || ROUND(AVG(NULLIF(gpa,0))::numeric,2) FROM applicants WHERE term IN (&#39;Fall 2025&#39;,&#39;F25&#39;) AND us_or_international = &#39;American&#39;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What percent of entries for Fall 2025 are Acceptances (to two decimal places)?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Acceptance percent: &#39; || ROUND(SUM(CASE WHEN status = &#39;Accepted&#39; THEN 1 ELSE 0 END)::numeric / COUNT(*) * 100,2) || &#39;%&#39; FROM applicants WHERE term IN (&#39;Fall 2025&#39;,&#39;F25&#39;)&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What is the average GPA of applicants who applied for Fall 2025 who are Acceptances?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Average GPA Acceptance: &#39; || ROUND(AVG(NULLIF(gpa,0))::numeric,2) FROM applicants WHERE term in (&#39;Fall 2025&#39;,&#39;F25&#39;) AND status = &#39;Accepted&#39;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;How many entries are from applicants who applied to JHU for a masters degrees in Computer Science?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;JHU Computer Science Masters Applications: &#39; || COUNT(*) FROM applicants WHERE llm_generated_university = &#39;Johns Hopkins University&#39; AND llm_generated_program = &#39;Computer Science&#39; AND degree = &#39;Masters&#39;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;How many entries from 2025 are acceptances from applicants who applied to Georgetown University for a PhD in Computer Science?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Georgetown University Computer Science PhD Acceptances: &#39; || COUNT(*) FROM applicants WHERE llm_generated_university = &#39;Georgetown University&#39; AND llm_generated_program = &#39;Computer Science&#39; AND term LIKE &#39;</span><span class="si">%2025%</span><span class="s2">&#39; AND status = &#39;Accepted&#39; AND degree = &#39;PhD&#39;&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What universities with at least 10 applications for master&#39;s programs in computer science have the lowest and highest acceptance rates?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Lowest acceptance rate: &#39; || (SELECT university || &#39; - &#39; || ROUND(acceptance_rate * 100, 2)::text || &#39;%&#39; FROM (SELECT llm_generated_university AS university, SUM(CASE WHEN status = &#39;Accepted&#39; THEN 1 ELSE 0 END)::numeric / COUNT(*) AS acceptance_rate, COUNT(*) AS total_apps FROM applicants WHERE degree = &#39;Masters&#39; AND llm_generated_program = &#39;Computer Science&#39; GROUP BY 1 HAVING COUNT(*) &gt;= 10) a ORDER BY acceptance_rate ASC LIMIT 1) || &#39; | Highest acceptance rate: &#39; || (SELECT university || &#39; - &#39; || ROUND(acceptance_rate * 100, 2)::text || &#39;%&#39; FROM (SELECT llm_generated_university AS university, SUM(CASE WHEN status = &#39;Accepted&#39; THEN 1 ELSE 0 END)::numeric / COUNT(*) AS acceptance_rate, COUNT(*) AS total_apps FROM applicants WHERE degree = &#39;Masters&#39; AND llm_generated_program = &#39;Computer Science&#39; GROUP BY 1 HAVING COUNT(*) &gt;= 10) b ORDER BY acceptance_rate DESC LIMIT 1)&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;What are the most popular PhD programs in 2024 and 2025 by applications?&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;SELECT &#39;Most popular PhD program in 2024: &#39; || (SELECT llm_generated_program || &#39; at &#39; || llm_generated_university || &#39; - &#39; || COUNT(*) FROM applicants WHERE degree = &#39;PhD&#39; AND term LIKE &#39;</span><span class="si">%2024%</span><span class="s2">&#39; GROUP BY llm_generated_program, llm_generated_university ORDER BY COUNT(*) DESC LIMIT 1) || &#39; | Most popular PhD program in 2025: &#39; || (SELECT llm_generated_program || &#39; at &#39; || llm_generated_university || &#39; - &#39; || COUNT(*) FROM applicants WHERE degree = &#39;PhD&#39; AND term LIKE &#39;</span><span class="si">%2025%</span><span class="s2">&#39; GROUP BY llm_generated_program, llm_generated_university ORDER BY COUNT(*) DESC LIMIT 1)&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+
+
+<div class="viewcode-block" id="run_queries">
+<a class="viewcode-back" href="../../api/src.query_data.html#src.query_data.run_queries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_queries</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run predefined SQL queries and return their results.</span>
+
+<span class="sd">    Executes each SQL query defined in `_get_questions_and_queries()` and</span>
+<span class="sd">    collects the question text with its corresponding database answer.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of dict</span>
+<span class="sd">        Each dict contains:</span>
+<span class="sd">        - &#39;question&#39; (str): The question being asked.</span>
+<span class="sd">        - &#39;answer&#39; (str): The answer from the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db_connection</span><span class="p">()</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">question</span><span class="p">,</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">_get_questions_and_queries</span><span class="p">():</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;question&quot;</span><span class="p">:</span> <span class="n">question</span><span class="p">,</span> <span class="s2">&quot;answer&quot;</span><span class="p">:</span> <span class="n">answer</span><span class="p">})</span>
+
+    <span class="n">cur</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="get_max_id">
+<a class="viewcode-back" href="../../api/src.query_data.html#src.query_data.get_max_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_max_id</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the maximum applicant result ID from the database.</span>
+
+<span class="sd">    Queries the applicants table for the maximum numeric ID extracted from</span>
+<span class="sd">    the `url` field.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        The maximum applicant ID, or 0 if the table is empty.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db_connection</span><span class="p">()</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        SELECT MAX(CAST(split_part(url, &#39;/result/&#39;, 2) AS INTEGER)) AS max_id</span>
+<span class="s2">        FROM applicants</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api/src.query_data.html#src.query_data.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run queries and print them to stdout.</span>
+
+<span class="sd">    This is intended for CLI usage.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">run_queries</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q: </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;question&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A: </span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;answer&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">80</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Grad Cafe Application</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Grad Cafe Application - Project Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../testing.html">Testing Guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Bernard Guillermo.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

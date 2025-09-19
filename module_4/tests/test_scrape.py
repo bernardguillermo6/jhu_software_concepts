@@ -4,7 +4,7 @@ from src import scrape
 
 
 # --- _scrape_survey_page tests ---
-
+@pytest.mark.analysis
 def test_scrape_survey_page_valid(monkeypatch):
     """Covers the happy path where we parse an entry and badges."""
     html = """
@@ -32,7 +32,7 @@ def test_scrape_survey_page_valid(monkeypatch):
     assert entry["GRE V Score"] == "165"
     assert entry["GRE AW"] == "4.5"
 
-
+@pytest.mark.analysis
 def test_scrape_survey_page_request_exception(monkeypatch):
     """Covers exception in http.request (lines 16–18)."""
     def boom(*a, **k): raise Exception("network fail")
@@ -41,7 +41,7 @@ def test_scrape_survey_page_request_exception(monkeypatch):
     results = scrape._scrape_survey_page(1)
     assert results == []
 
-
+@pytest.mark.analysis
 def test_scrape_survey_page_non_200(monkeypatch):
     """Covers non-200 response (line 59)."""
     fake_resp = MagicMock(status=500, data=b"")
@@ -50,7 +50,7 @@ def test_scrape_survey_page_non_200(monkeypatch):
     results = scrape._scrape_survey_page(1)
     assert results == []
 
-
+@pytest.mark.analysis
 def test_scrape_survey_page_no_link_tag(monkeypatch):
     """Covers path with no <a> tag (line 72)."""
     html = "<table><tr><td>No link here</td></tr></table>"
@@ -60,7 +60,7 @@ def test_scrape_survey_page_no_link_tag(monkeypatch):
     results = scrape._scrape_survey_page(1)
     assert results == []
 
-
+@pytest.mark.analysis
 def test_scrape_survey_page_badge_unmatched(monkeypatch):
     """Covers badges with text that does not match GRE/Term (lines 54–55)."""
     html = """
@@ -79,7 +79,7 @@ def test_scrape_survey_page_badge_unmatched(monkeypatch):
 
 
 # --- _scrape_page tests ---
-
+@pytest.mark.analysis
 def test_scrape_page_valid(monkeypatch):
     """Covers valid detailed page parsing."""
     html = """
@@ -99,7 +99,7 @@ def test_scrape_page_valid(monkeypatch):
     assert "Program" in result["data"]
     assert result["data"]["GRE Score"] == "330"
 
-
+@pytest.mark.analysis
 def test_scrape_page_non_200(monkeypatch):
     """Covers non-200 in _scrape_page."""
     fake_resp = MagicMock(status=404, data=b"")
@@ -108,7 +108,7 @@ def test_scrape_page_non_200(monkeypatch):
     result = scrape._scrape_page({"id": 999, "date_added": "x"})
     assert result is None
 
-
+@pytest.mark.analysis
 def test_scrape_page_exception(monkeypatch):
     """Covers exception in _scrape_page."""
     def boom(*a, **k): raise Exception("network fail")
@@ -119,7 +119,7 @@ def test_scrape_page_exception(monkeypatch):
 
 
 # --- scrape_new_entries tests ---
-
+@pytest.mark.analysis
 def test_scrape_new_entries_filters_and_stops(monkeypatch):
     """Covers scrape_new_entries filtering and stopping early."""
     # Fake survey page returns two entries
@@ -133,7 +133,7 @@ def test_scrape_new_entries_filters_and_stops(monkeypatch):
     results = scrape.scrape_new_entries(max_id=1, target_count=2, batch_size=1)
     assert all(r["id"] > 1 for r in results)  # filtered by max_id
 
-@pytest.mark.scrape
+@pytest.mark.analysis
 def test_scrape_survey_page_bad_href(monkeypatch):
     """Covers except Exception: pass in _scrape_survey_page."""
     html = """
@@ -148,7 +148,7 @@ def test_scrape_survey_page_bad_href(monkeypatch):
     # Exception in parsing -> caught and passed
     assert results == []
 
-@pytest.mark.scrape
+@pytest.mark.integration
 def test_scrape_new_entries_no_new_entries(monkeypatch):
     """Covers 'No new entries found... break' in scrape_new_entries."""
     monkeypatch.setattr(scrape, "_scrape_survey_page", lambda page: [])
