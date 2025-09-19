@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis{% endblock %}
+
+{% block content %}
+<h1>Analysis</h1>
+
+<!-- Buttons Row -->
+<div class="button-row">
+    <!-- Fetch New Data Button -->
+    <form id="fetch-form">
+        <button type="submit"
+                id="fetch-btn"
+                class="btn"
+                data-testid="pull-data-btn"
+                title="Pull in the most up to date information from thegradcafe.com"
+                {% if is_scraping %}disabled{% endif %}>
+            Pull Data
+        </button>
+    </form>
+
+    <!-- Refresh SQL Queries Button -->
+    <form id="refresh-form">
+        <button type="submit"
+                id="refresh-btn"
+                class="btn"
+                data-testid="update-analysis-btn"
+                title="Update the answers to include the most up to date data"
+                {% if is_scraping %}disabled{% endif %}>
+            Update Analysis
+        </button>
+    </form>
+</div>
+
+<hr>
+
+{% for row in data %}
+<div class="qa">
+    <div class="question"><strong>Question:</strong> {{ row.question }}</div>
+    <div class="answer"><strong>Answer:</strong> {{ row.answer }}</div>
+</div>
+{% endfor %}
+
+<script>
+function setButtonsDisabled(disabled) {
+    const fetchBtn = document.getElementById("fetch-btn");
+    const refreshBtn = document.getElementById("refresh-btn");
+    fetchBtn.disabled = disabled;
+    refreshBtn.disabled = disabled;
+    fetchBtn.style.opacity = disabled ? 0.5 : 1;
+    refreshBtn.style.opacity = disabled ? 0.5 : 1;
+    fetchBtn.style.cursor = disabled ? "not-allowed" : "pointer";
+    refreshBtn.style.cursor = disabled ? "not-allowed" : "pointer";
+}
+
+// Poll server to re-enable buttons when scraper is finished
+function checkScraperStatus() {
+    fetch('{{ url_for("pages.scraper_status") }}')
+        .then(response => response.json())
+        .then(data => setButtonsDisabled(data.is_scraping));
+}
+
+// ✅ Handle Pull Data without redirect
+document.getElementById("fetch-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    setButtonsDisabled(true);
+
+    fetch('{{ url_for("pages.scrape") }}', { method: "POST" })
+        .then(r => r.json())
+        .then(data => console.log("Scrape response:", data))
+        .catch(err => console.error("Scrape error:", err));
+});
+
+// ✅ Handle Update Analysis without redirect + force reload after success
+document.getElementById("refresh-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    setButtonsDisabled(true);
+
+    fetch('{{ url_for("pages.refresh_queries") }}', { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+            console.log("Refresh response:", data);
+            if (data.ok) {
+                window.location.reload(); // 🔑 refresh page to update numbers
+            }
+        })
+        .catch(err => console.error("Refresh error:", err));
+});
+
+// Poll every 3 seconds
+setInterval(checkScraperStatus, 3000);
+</script>
+{% endblock %}
