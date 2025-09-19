@@ -8,7 +8,7 @@
 <!-- Buttons Row -->
 <div class="button-row">
     <!-- Fetch New Data Button -->
-    <form id="fetch-form" action="{{ url_for('pages.scrape') }}" method="post">
+    <form id="fetch-form">
         <button type="submit" id="fetch-btn" class="btn"
             title="Pull in the most up to date information from thegradcafe.com"
             {% if is_scraping %}disabled{% endif %}>
@@ -17,7 +17,7 @@
     </form>
 
     <!-- Refresh SQL Queries Button -->
-    <form id="refresh-form" action="{{ url_for('pages.refresh_queries') }}" method="post">
+    <form id="refresh-form">
         <button type="submit" id="refresh-btn" class="btn"
             title="Update the answers to include the most up to date data"
             {% if is_scraping %}disabled{% endif %}>
@@ -54,9 +54,31 @@ function checkScraperStatus() {
         .then(data => setButtonsDisabled(data.is_scraping));
 }
 
-// Immediately disable buttons when fetch form is submitted
-document.getElementById("fetch-form").addEventListener("submit", function() {
+// ✅ Handle Pull Data without redirect
+document.getElementById("fetch-form").addEventListener("submit", function(e) {
+    e.preventDefault();
     setButtonsDisabled(true);
+
+    fetch('{{ url_for("pages.scrape") }}', { method: "POST" })
+        .then(r => r.json())
+        .then(data => console.log("Scrape response:", data))
+        .catch(err => console.error("Scrape error:", err));
+});
+
+// ✅ Handle Update Analysis without redirect + force reload after success
+document.getElementById("refresh-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    setButtonsDisabled(true);
+
+    fetch('{{ url_for("pages.refresh_queries") }}', { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+            console.log("Refresh response:", data);
+            if (data.ok) {
+                window.location.reload(); // 🔑 refresh page to update numbers
+            }
+        })
+        .catch(err => console.error("Refresh error:", err));
 });
 
 // Poll every 3 seconds

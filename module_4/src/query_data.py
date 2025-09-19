@@ -78,8 +78,13 @@ def get_max_id():
     return result if result else 0
 
 
-if __name__ == "__main__":
+def main():
+    """Run queries and print them to stdout (for CLI usage)."""
     for item in run_queries():
         print(f"Q: {item['question']}")
         print(f"A: {item['answer']}")
         print("-" * 80)
+
+
+if __name__ == "__main__":
+    main()

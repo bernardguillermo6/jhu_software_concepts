@@ -50,13 +50,13 @@ def scrape():
     is_scraping = True
     try:
         max_id = get_max_id()
-        new_data = scrape_new_entries(max_id=max_id, target_count=20)
+        new_data = scrape_new_entries(max_id=max_id, target_count=1000)
 
         raw_file = os.path.join(DATA_DIR, "new_entries.json")
         with open(raw_file, "w") as f:
             json.dump(new_data, f, indent=2)
 
-        precleaned_data = clean_data(new_data, target_count=20)
+        precleaned_data = clean_data(new_data, target_count=1000)
         precleaned_file = os.path.join(DATA_DIR, "precleaned_entries.json")
         with open(precleaned_file, "w") as f:
             json.dump(precleaned_data, f, indent=2)
