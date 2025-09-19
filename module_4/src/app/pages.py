@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template
 from src.scrape import scrape_new_entries
 from src.clean import clean_data, clean_with_llm
 import os, json
 from src.load_data import load_data_to_db
-from src.query_data import get_db_connection, run_queries, get_max_id
+from src.query_data import run_queries, get_max_id
 
 # Initialize blueprint
 bp = Blueprint("pages", __name__)
@@ -11,7 +11,7 @@ bp = Blueprint("pages", __name__)
 # Global flag to track scraper state
 is_scraping = False
 
-# <<< ADDED: Set up data directory inside src
+# Data directory inside src
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")  # src/data
 DATA_DIR = os.path.abspath(DATA_DIR)  # resolve to absolute path
 os.makedirs(DATA_DIR, exist_ok=True)  # make sure it exists
@@ -41,19 +41,17 @@ def scrape():
       - Runs LLM cleaning and saves to `src/data/cleaned_entries.jsonl`.
 
     Output:
-        A redirect to the index page.
+        JSON {ok: True} with 200 on success, or {busy: True} with 409 if busy.
     """
     global is_scraping
     if is_scraping:
-        flash("Scraper is already running. Please wait.", "warning")
-        return redirect(url_for("pages.index"))
+        return {"busy": True}, 409
 
     is_scraping = True
     try:
         max_id = get_max_id()
         new_data = scrape_new_entries(max_id=max_id, target_count=20)
 
-        # <<< CHANGED: write into src/data
         raw_file = os.path.join(DATA_DIR, "new_entries.json")
         with open(raw_file, "w") as f:
             json.dump(new_data, f, indent=2)
@@ -66,17 +64,11 @@ def scrape():
         cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
         clean_with_llm(precleaned_file, output_file=cleaned_file)
 
-        flash(
-            f"Scraper finished! {len(new_data)} new entries saved, pre-cleaned, "
-            "and LLM-cleaned. Click Refresh Queries to update numbers.",
-            "success",
-        )
+        return {"ok": True}, 200
     except Exception as e:
-        flash(f"Error during scraping: {e}", "danger")
+        return {"error": str(e)}, 500
     finally:
         is_scraping = False
-
-    return redirect(url_for("pages.index"))
 
 
 @bp.route("/refresh_queries", methods=["POST"])
@@ -84,23 +76,21 @@ def refresh_queries():
     """Load cleaned data into PostgreSQL and refresh SQL query answers.
 
     Output:
-        A redirect to the index page.
+        JSON {ok: True} with 200 on success,
+        or {busy: True} with 409 if busy,
+        or {error: "..."} with 200 if no file.
     """
     global is_scraping
 
     if is_scraping:
-        flash("Cannot refresh queries while scraper is running.", "warning")
-        return redirect(url_for("pages.index"))
+        return {"busy": True}, 409
 
-    # <<< CHANGED: look in src/data
     cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
     if os.path.exists(cleaned_file):
         load_data_to_db(cleaned_file, initial_load=False)
-        flash("SQL query answers refreshed with latest data!", "success")
+        return {"ok": True}, 200
     else:
-        flash("No cleaned data file found. Please run scraper first.", "warning")
-
-    return redirect(url_for("pages.index"))
+        return {"error": "No cleaned data file found. Please run scraper first."}, 200
 
 
 @bp.route("/scraper_status")
