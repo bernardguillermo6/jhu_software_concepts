@@ -1,0 +1,68 @@
+/* ---------- Global Reset ---------- */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* ---------- Button Row ---------- */
+.button-row {
+  display: flex;
+  justify-content: flex-end;  /* push buttons to the right */
+  align-items: center;
+  gap: 10px;                  /* space between buttons */
+  margin-bottom: 15px;
+}
+
+.button-row form {
+  margin: 0;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  background-color: #007BFF;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-size: 14px;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  background-color: #004085;
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- Q&A Blocks ---------- */
+.qa {
+  margin-bottom: 20px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.08);
+}
+
+.question {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #222;
+}
+
+.answer {
+  margin-left: 10px;
+  color: #444;
+}
