@@ -20,17 +20,13 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U postgres -d testdb"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,31 +38,41 @@ jobs:
           cd module_4
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov beautifulsoup4
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            sleep 2
+          done
 
       - name: Initialize DB schema
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
         run: |
           psql $DATABASE_URL -c "
           CREATE TABLE IF NOT EXISTS applicants (
-              id SERIAL PRIMARY KEY,
-              program TEXT NOT NULL,
+              p_id SERIAL PRIMARY KEY,
+              program TEXT,
               comments TEXT,
               date_added DATE,
-              url TEXT UNIQUE NOT NULL,
-              status TEXT NOT NULL,
+              url TEXT UNIQUE,
+              status TEXT,
               term TEXT,
-              nationality TEXT,
-              gpa NUMERIC,
-              gre_score NUMERIC,
-              gre_v NUMERIC,
-              gre_aw NUMERIC,
+              us_or_international TEXT,
+              gpa FLOAT,
+              gre FLOAT,
+              gre_v FLOAT,
+              gre_aw FLOAT,
               degree TEXT,
               llm_generated_program TEXT,
               llm_generated_university TEXT
           );"
 
       - name: Run tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/testdb
         run: |
           cd module_4
-          pytest -m "web or buttons or analysis or db or integration" -v --maxfail=1 --disable-warnings --cov=src --cov-report=term-missing
+          pytest -m "web or buttons or analysis or db or integration" -v --maxfail=1 --disable-warnings
 
