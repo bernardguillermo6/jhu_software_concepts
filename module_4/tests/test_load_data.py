@@ -2,6 +2,9 @@ import io
 import sys
 import runpy
 import pytest
+from unittest.mock import MagicMock
+import src.load_data as loader
+
 
 import src.load_data as loader  # replace with actual filename if different
 
@@ -99,3 +102,18 @@ def test_cli_entrypoint_runs(monkeypatch, tmp_path, capsys):
     captured = capsys.readouterr()
     assert "Performing initial load" in captured.out
     assert "Loaded 1 entries" in captured.out
+
+@pytest.mark.db
+def test_load_data_to_db_appends(monkeypatch, tmp_path, capsys):
+    f = tmp_path / "data.jsonl"
+    f.write_text('{"URL": "http://example.com/append", "program": "CS"}\n')
+
+    fake_conn = MagicMock()
+    monkeypatch.setattr(loader.psycopg, "connect", lambda *a, **k: fake_conn)
+    monkeypatch.setattr(loader, "insert_data", lambda conn, data: None)
+
+    # Call without initial flag — should default to append branch
+    loader.load_data_to_db(str(f), connection_string="fake://conn")
+
+    captured = capsys.readouterr()
+    assert "Appending new entries to existing table..." in captured.out

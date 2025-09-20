@@ -25,13 +25,17 @@ def test_buttons_are_present(client):
 
 
 @pytest.mark.buttons
-def test_pull_data_triggers_loader(client):
+def test_pull_data_triggers_loader(client, monkeypatch, tmp_path):
     """
     POST /scrape should:
     - Return 200 with {"ok": True}.
-    - Trigger the loader (scrape_new_entries, clean_data, clean_with_llm).
+    - Trigger scrape_new_entries, clean_data, and clean_with_llm.
+    (DB loading happens in /refresh_queries, so not asserted here.)
     """
-    with patch("src.app.pages.get_max_id", return_value=0):  
+    # Redirect DATA_DIR to a temp folder
+    monkeypatch.setattr("src.app.pages.DATA_DIR", tmp_path)
+
+    with patch("src.app.pages.get_max_id", return_value=0):
         with patch("src.app.pages.scrape_new_entries", return_value=[{"id": 1, "question": "Q?", "answer": "A"}]) as mock_scrape:
             with patch("src.app.pages.clean_data", return_value=[{"id": 1, "question": "Q?", "answer": "A"}]) as mock_clean:
                 with patch("src.app.pages.clean_with_llm", return_value=None) as mock_llm:
