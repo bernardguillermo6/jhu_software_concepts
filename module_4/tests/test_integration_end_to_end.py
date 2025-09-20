@@ -6,9 +6,12 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from src.query_data import get_db_connection
 from src.load_data import create_table  # ✅ ensure schema creation
+from pathlib import Path
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "data")
-DATA_DIR = os.path.abspath(DATA_DIR)
+# Always resolve relative to module_4/src/data
+ROOT_DIR = Path(__file__).resolve().parent.parent  # module_4/
+DATA_DIR = ROOT_DIR / "src" / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.mark.integration

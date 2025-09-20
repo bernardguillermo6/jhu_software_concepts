@@ -1,11 +1,11 @@
 import os
 import sys
 import pytest
+from pathlib import Path
 
-# Ensure project root (module_4) is on sys.path so "src" is importable
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+# Always anchor relative to this file
+PROJECT_ROOT = Path(__file__).resolve().parents[1]  # module_4
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.app import create_app, pages
 
