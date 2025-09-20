@@ -5,9 +5,8 @@ from src.query_data import get_db_connection, run_queries
 from src.load_data import create_table  # ✅ ensure schema creation
 from pathlib import Path
 
-# Always resolve relative to module_4/src/data
-ROOT_DIR = Path(__file__).resolve().parent.parent  # module_4/
-DATA_DIR = ROOT_DIR / "src" / "data"
+# Match exactly where the app expects the cleaned file
+DATA_DIR = Path("src/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -51,11 +50,6 @@ def test_insert_on_pull(client):
                 with cleaned_file.open("w") as f:
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
-
-                # ✅ Debug: check the file right after writing
-                print("File path:", cleaned_file)
-                print("File exists after write?", cleaned_file.exists())
-                print("File size:", cleaned_file.stat().st_size if cleaned_file.exists() else 0)
 
                 client.post("/scrape")
                 client.post("/refresh_queries")
