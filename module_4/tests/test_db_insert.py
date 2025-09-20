@@ -52,6 +52,11 @@ def test_insert_on_pull(client):
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
 
+                # ✅ Debug: check the file right after writing
+                print("File path:", cleaned_file)
+                print("File exists after write?", cleaned_file.exists())
+                print("File size:", cleaned_file.stat().st_size if cleaned_file.exists() else 0)
+
                 client.post("/scrape")
                 client.post("/refresh_queries")
 
