@@ -8,8 +8,8 @@ from src.load_data import create_table  # ✅ ensure schema creation
 from pathlib import Path
 
 # Match exactly where the app expects the cleaned file
-DATA_DIR = Path("src/data")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+ROOT_DIR = Path(__file__).resolve().parents[1]  # module_4
+DATA_DIR = ROOT_DIR / "src" / "data"
 
 
 @pytest.mark.integration

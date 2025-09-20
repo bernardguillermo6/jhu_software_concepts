@@ -15,6 +15,7 @@ from src.clean import clean_data, clean_with_llm
 import os, json
 from src.load_data import load_data_to_db
 from src.query_data import run_queries, get_max_id
+from pathlib import Path
 
 # Initialize blueprint
 bp = Blueprint("pages", __name__)
@@ -22,11 +23,8 @@ bp = Blueprint("pages", __name__)
 # Global flag to track scraper state
 is_scraping = False
 
-# Data directory inside src
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")  # src/data
-DATA_DIR = os.path.abspath(DATA_DIR)  # resolve to absolute path
-os.makedirs(DATA_DIR, exist_ok=True)  # make sure it exists
-
+ROOT_DIR = Path(__file__).resolve().parents[1]  # module_4
+DATA_DIR = ROOT_DIR / "src" / "data"
 
 @bp.route("/")
 @bp.route("/analysis")
