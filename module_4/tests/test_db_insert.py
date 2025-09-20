@@ -3,6 +3,7 @@ import json
 import pytest
 from unittest.mock import patch
 from src.query_data import get_db_connection, run_queries
+from src.load_data import create_table  # ✅ ensure schema creation
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "data")
 DATA_DIR = os.path.abspath(DATA_DIR)
@@ -12,8 +13,12 @@ DATA_DIR = os.path.abspath(DATA_DIR)
 def test_insert_on_pull(client):
     """
     POST /scrape then /refresh_queries should insert rows into applicants.
+    Ensures schema is created fresh for CI.
     """
     conn = get_db_connection()
+    # ✅ Ensure schema exists before trying to insert
+    create_table(conn)
+
     cur = conn.cursor()
     cur.execute("DELETE FROM applicants;")
     conn.commit()
@@ -65,6 +70,9 @@ def test_idempotency_on_duplicate_pull(client):
     Duplicate pulls should not create duplicate rows (ON CONFLICT url).
     """
     conn = get_db_connection()
+    # ✅ Ensure schema exists
+    create_table(conn)
+
     cur = conn.cursor()
     cur.execute("DELETE FROM applicants;")
     conn.commit()
@@ -111,10 +119,16 @@ def test_idempotency_on_duplicate_pull(client):
 def test_run_queries_returns_expected_keys(client):
     """
     run_queries() should return dicts with 'question' and 'answer' keys.
+    Ensures schema exists so CI won't fail if table is missing.
     """
+    conn = get_db_connection()
+    create_table(conn)  # ✅ make sure applicants table exists
+    conn.close()
+
     results = run_queries()
     assert isinstance(results, list)
     if results:  # only check first row if not empty
         row = results[0]
         assert "question" in row
         assert "answer" in row
+

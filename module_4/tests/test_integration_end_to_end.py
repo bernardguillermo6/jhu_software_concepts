@@ -5,6 +5,7 @@ import pytest
 from unittest.mock import patch
 from bs4 import BeautifulSoup
 from src.query_data import get_db_connection
+from src.load_data import create_table  # ✅ ensure schema creation
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "src", "data")
 DATA_DIR = os.path.abspath(DATA_DIR)
@@ -19,8 +20,9 @@ def test_end_to_end_pull_update_render(client):
     3. POST /refresh_queries inserts rows into DB.
     4. GET / renders updated analysis with correctly formatted values.
     """
-    # Step 0: Clear DB before test
+    # Step 0: Ensure schema exists and clear DB
     conn = get_db_connection()
+    create_table(conn)  # ✅ ensure applicants table exists
     cur = conn.cursor()
     cur.execute("DELETE FROM applicants;")
     conn.commit()
@@ -110,6 +112,7 @@ def test_multiple_pulls_respect_uniqueness(client):
     Running /scrape twice with overlapping data should not create duplicate rows.
     """
     conn = get_db_connection()
+    create_table(conn)  # ✅ ensure applicants table exists
     cur = conn.cursor()
     cur.execute("DELETE FROM applicants;")
     conn.commit()
