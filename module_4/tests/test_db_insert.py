@@ -1,4 +1,3 @@
-import os
 import json
 import pytest
 from unittest.mock import patch
@@ -43,13 +42,13 @@ def test_insert_on_pull(client):
         "llm-generated-university": "MIT"
     }]
 
-    cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
+    cleaned_file = DATA_DIR / "cleaned_entries.jsonl"
 
     with patch("src.app.pages.scrape_new_entries", return_value=fake_data):
         with patch("src.app.pages.clean_data", return_value=fake_data):
             with patch("src.app.pages.clean_with_llm"):
                 # Write test JSONL manually
-                with open(cleaned_file, "w") as f:
+                with cleaned_file.open("w") as f:
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
 
@@ -97,12 +96,12 @@ def test_idempotency_on_duplicate_pull(client):
         "llm-generated-university": "Stanford"
     }]
 
-    cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
+    cleaned_file = DATA_DIR / "cleaned_entries.jsonl"
 
     with patch("src.app.pages.scrape_new_entries", return_value=fake_data):
         with patch("src.app.pages.clean_data", return_value=fake_data):
             with patch("src.app.pages.clean_with_llm"):
-                with open(cleaned_file, "w") as f:
+                with cleaned_file.open("w") as f:
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
 
@@ -134,4 +133,3 @@ def test_run_queries_returns_expected_keys(client):
         row = results[0]
         assert "question" in row
         assert "answer" in row
-

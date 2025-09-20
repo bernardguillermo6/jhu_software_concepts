@@ -1,4 +1,3 @@
-import os
 import json
 import re
 import pytest
@@ -66,13 +65,13 @@ def test_end_to_end_pull_update_render(client):
         },
     ]
 
-    cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
+    cleaned_file = DATA_DIR / "cleaned_entries.jsonl"
 
     with patch("src.app.pages.scrape_new_entries", return_value=fake_data):
         with patch("src.app.pages.clean_data", return_value=fake_data):
             with patch("src.app.pages.clean_with_llm"):
                 # Write fake cleaned file
-                with open(cleaned_file, "w") as f:
+                with cleaned_file.open("w") as f:
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
 
@@ -139,13 +138,13 @@ def test_multiple_pulls_respect_uniqueness(client):
         }
     ]
 
-    cleaned_file = os.path.join(DATA_DIR, "cleaned_entries.jsonl")
+    cleaned_file = DATA_DIR / "cleaned_entries.jsonl"
 
     with patch("src.app.pages.scrape_new_entries", return_value=fake_data):
         with patch("src.app.pages.clean_data", return_value=fake_data):
             with patch("src.app.pages.clean_with_llm"):
                 # Write fake cleaned file
-                with open(cleaned_file, "w") as f:
+                with cleaned_file.open("w") as f:
                     for row in fake_data:
                         f.write(json.dumps(row) + "\n")
 
