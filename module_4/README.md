@@ -1,7 +1,7 @@
 Bernard Guillermo (bguille3@jh.edu)
 
 
-# Module 4: SQL Data Analysis - Due September 22, 2025
+# Module 4: Pytest and Sphinx - Due September 22, 2025
 
 In this assignment, we're building an automated test suite to cover the application we built in module 3. It covers everything from the Flask page, interactive buttons, analysis outputs/formatting, and database writes. We also are publishing CI/CD tests to the Github repository and publishing documentation on Read the Docs using Sphinx.
 
