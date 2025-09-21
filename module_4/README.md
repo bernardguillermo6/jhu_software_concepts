@@ -16,7 +16,7 @@ I approached this module by copying everything from module 3 into a module_4 fol
 Clone the repository:
 ```
 git clone https://github.com/bernardguillermo6/jhu_software_concepts.git
-cd module_3
+cd module_4
 ```
 
 Create a virtual environment:
@@ -38,7 +38,7 @@ pytest -m "web or buttons or analysis or db or integration"
 ```
 The application itself can be run using `python -m src.run`
 
-Documentation is published to Read the Documents [here] (https://jhu-software-concepts-bguillermo.readthedocs.io/en/latest/).
+Documentation is published to Read the Docs [here](https://jhu-software-concepts-bguillermo.readthedocs.io/en/latest/).
 
 ## Project Structure
 ```
