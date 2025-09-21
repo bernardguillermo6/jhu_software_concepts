@@ -78,7 +78,8 @@
 <dd class="field-odd"><p>JSON response with status:
 - <code class="docutils literal notranslate"><span class="pre">{&quot;ok&quot;:</span> <span class="pre">True},</span> <span class="pre">200</span></code> if refreshed successfully
 - <code class="docutils literal notranslate"><span class="pre">{&quot;busy&quot;:</span> <span class="pre">True},</span> <span class="pre">409</span></code> if the scraper is already running
-- <code class="docutils literal notranslate"><span class="pre">{&quot;error&quot;:</span> <span class="pre">&quot;...&quot;}</span> <span class="pre">,</span> <span class="pre">200</span></code> if no cleaned file exists</p>
+- <code class="docutils literal notranslate"><span class="pre">{&quot;error&quot;:</span> <span class="pre">&quot;...&quot;}</span> <span class="pre">,</span> <span class="pre">200</span></code> if no cleaned file exists
+- <code class="docutils literal notranslate"><span class="pre">{&quot;error&quot;:</span> <span class="pre">&quot;...&quot;}</span> <span class="pre">,</span> <span class="pre">500</span></code> if loader fails</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>tuple(dict, int)</p>
