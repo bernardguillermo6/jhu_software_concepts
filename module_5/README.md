@@ -20,7 +20,7 @@ with formatting and isort to take care of import order. Then, I installed pylint
 Clone the repository:
 ```
 git clone https://github.com/bernardguillermo6/jhu_software_concepts.git
-cd module_4
+cd module_5
 ```
 
 Create a virtual environment:
