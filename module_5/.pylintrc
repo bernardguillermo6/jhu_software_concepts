@@ -1,2 +1,2 @@
 [MASTER]
-ignore=venv,__pycache__,docs
+ignore=venv,__pycache__
